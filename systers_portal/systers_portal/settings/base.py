@@ -1,9 +1,7 @@
 '''
 Django settings for systers_portal project.
-
 For more information on this file, see
 https://docs.djangoproject.com/en/1.6/topics/settings/
-
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.6/ref/settings/
 '''
@@ -12,6 +10,7 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
+GOOGLE_MAPS_API_KEY = os.environ.get('GOOGLE_MAPS_API_KEY')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
@@ -26,7 +25,6 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = (
-    'djangocms_admin_style',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -164,3 +162,5 @@ ANONYMOUS_USER_ID = None
 
 # Django Crispy Forms configuration
 CRISPY_TEMPLATE_PACK = 'bootstrap3'
+
+GEOIP_PATH = os.path.join(BASE_DIR, "GeoLite2-City_20200616/GeoLite2-City.mmdb")
