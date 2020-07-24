@@ -1,6 +1,10 @@
 from django.contrib.auth.models import User
 from django.contrib import messages
+<<<<<<< HEAD
 from django.core.urlresolvers import reverse
+=======
+from django.urls import reverse
+>>>>>>> 3789c618767813571e68b4017abf3bd67fcc75e0
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
