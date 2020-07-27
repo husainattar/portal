@@ -1,5 +1,5 @@
 from django.contrib.auth.models import Group
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.db import models
 
 from common.models import Post
@@ -8,6 +8,7 @@ from community.constants import (COMMUNITY_ADMIN,
                                  YES_NO_CHOICES)
 from membership.constants import NOT_MEMBER, OK
 from users.models import SystersUser
+from cities_light.models import City
 
 
 class Community(models.Model):
@@ -15,6 +16,8 @@ class Community(models.Model):
     name = models.CharField(max_length=255, verbose_name="Name")
     slug = models.SlugField(max_length=150, unique=True, verbose_name="Slug")
     order = models.IntegerField(unique=True, verbose_name="Order")
+    location = models.ForeignKey(City, verbose_name="Location", default="",
+                                 on_delete=models.DO_NOTHING)
     email = models.EmailField(max_length=255, blank=True, verbose_name="Email")
     mailing_list = models.EmailField(max_length=255, blank=True,
                                      verbose_name="Mailing list")
@@ -22,9 +25,9 @@ class Community(models.Model):
                                      related_name='communities',
                                      verbose_name="Members")
     admin = models.ForeignKey(SystersUser, related_name='community',
-                              verbose_name="Community admin")
+                              verbose_name="Community admin", on_delete=models.CASCADE)
     parent_community = models.ForeignKey('self', blank=True, null=True,
-                                         verbose_name="Parent community")
+                                         verbose_name="Parent community", on_delete=models.CASCADE)
     website = models.URLField(max_length=255, blank=True,
                               verbose_name="Website")
     facebook = models.URLField(max_length=255, blank=True,
@@ -80,28 +83,24 @@ class Community(models.Model):
 
     def has_changed_name(self):
         """Check if community has a new name
-
         :return: True if community changed name, False otherwise
         """
         return self.name != self.original_name
 
     def has_changed_admin(self):
         """Check if community has a new admin
-
         :return: True if community changed admin, False otherwise
         """
         return self.admin != self.original_admin
 
     def add_member(self, systers_user):
         """Add community member
-
         :param systers_user: SystersUser objects
         """
         self.members.add(systers_user)
 
     def remove_member(self, systers_user):
         """Remove community member
-
         :param systers_user: SystersUser object
         :return:
         """
@@ -109,7 +108,6 @@ class Community(models.Model):
 
     def get_fields(self):
         """Get model fields of a Community object
-
         :return: list of tuples (fieldname, fieldvalue)
         """
         return [(field.name, getattr(self, field.name)) for field in
@@ -117,7 +115,6 @@ class Community(models.Model):
 
     def set_new_admin(self, new_admin):
         """Transfer the admin role from the old to the new admin
-
         :param new_admin: SystersUser object new admin of the community
         :return: OK if setting was successful, NOT_MEMBER if settings was
                  unsuccessful, since the new admin is not a member of the
@@ -141,12 +138,14 @@ class RequestCommunity(models.Model):
     slug = models.SlugField(max_length=150, unique=True, verbose_name="Slug")
     order = models.PositiveIntegerField(
         null=True, blank=True, verbose_name="Order")
+    location = models.ForeignKey(City, verbose_name="Location",
+                                 default="", on_delete=models.CASCADE)
     email = models.EmailField(max_length=255, blank=True,
                               verbose_name=" At what email address would you like to be contacted?")
     mailing_list = models.EmailField(max_length=255, blank=True,
                                      verbose_name="Mailing list of the community")
     parent_community = models.ForeignKey(Community, blank=True, null=True,
-                                         verbose_name="Parent community")
+                                         verbose_name="Parent community", on_delete=models.CASCADE)
     website = models.URLField(max_length=255, blank=True,
                               verbose_name="Link to the website")
     facebook = models.URLField(max_length=255, blank=True,
@@ -193,10 +192,10 @@ class RequestCommunity(models.Model):
                                     verbose_name=" Will there be real-time meetings in addition to an online community?\
          (Example, at the Grace Hopper Celebration; regional meetings; etc)")
     user = models.ForeignKey(
-        SystersUser, verbose_name="Created by", related_name="requestor")
+        SystersUser, verbose_name="Created by", related_name="requestor", on_delete=models.CASCADE)
     is_approved = models.BooleanField(default=False, verbose_name="Approved")
     approved_by = models.ForeignKey(SystersUser, blank=True, null=True,
-                                    verbose_name='Approved by')
+                                    verbose_name='Approved by', on_delete=models.CASCADE)
     date_created = models.DateTimeField(
         auto_now_add=True, verbose_name="Date created")
 
@@ -205,7 +204,6 @@ class RequestCommunity(models.Model):
 
     def get_fields(self):
         """Get model fields of a RequestCommunity object
-
         :return: list of tuples (fieldname, fieldvalue)
         """
         return [(field.name, getattr(self, field.name)) for field in
@@ -213,7 +211,6 @@ class RequestCommunity(models.Model):
 
     def get_verbose_fields(self):
         """Get verbose names of RequestCommunity object's model fields
-
         :return: list of tuples (verbosefieldname, fieldvalue)
         """
 
@@ -224,7 +221,7 @@ class RequestCommunity(models.Model):
 class CommunityPage(Post):
     """Model to represent an arbitrary community page"""
     order = models.IntegerField(verbose_name="Order")
-    community = models.ForeignKey(Community, verbose_name="Community")
+    community = models.ForeignKey(Community, verbose_name="Community", on_delete=models.CASCADE)
 
     class Meta:
         unique_together = (('community', 'slug'), ('community', 'order'))
